@@ -42,6 +42,7 @@ publishing {
 
         pom {
             name.set(this@withType.name)
+            description.set("Kotlin Multiplatform library for componentization of Compose UI.")
             url.set("https://github.com/sergejsha/$rootProjectName")
 
             licenses {

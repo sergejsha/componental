@@ -3,14 +3,12 @@
 
 # 🍱 Componental
 
-Kotlin Multiplatform library for componentization of Compose UI code.
-
-The library is based on concepts implemented by [Decompose](https://github.com/arkivanov/Decompose). The differences
-are:
+Kotlin Multiplatform library for componentization of Compose UI. The library is based on concepts implemented
+by [Decompose](https://github.com/arkivanov/Decompose). The differences are:
 
 - Kotlin's coroutine first
-- Avoidance dependencies on Android types
-- Slightly different API
+- No dependencies on Android types
+- Slightly modified API
 
 Use it only if you know what you do.
 
@@ -21,11 +19,11 @@ In `gradle/libs.versions.toml`
 ```toml
 [versions]
 kotlin = "2.0.0"
-halfbit-componental = "0.1"
+componental = "0.1"
 
 [libraries]
-halfbit-componental = { module = "de.halfbit:componental", version.ref = "halfbit-componental" }
-halfbit-componental-compose = { module = "de.halfbit:componental-compose", version.ref = "halfbit-componental" }
+componental = { module = "de.halfbit:componental", version.ref = "componental" }
+componental-compose = { module = "de.halfbit:componental-compose", version.ref = "componental" }
 
 [plugins]
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -43,7 +41,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.halfbit.componental)
+            implementation(libs.componental)
         }
     }
 }
@@ -59,7 +57,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.halfbit.componental.compose)
+    api(libs.componental.compose)
 }
 ```
 
