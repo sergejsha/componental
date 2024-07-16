@@ -3,8 +3,8 @@
 
 # 🍱 Componental
 
-Kotlin Multiplatform library for componentization of Compose UI. The library is based on concepts implemented
-by [Decompose](https://github.com/arkivanov/Decompose). The differences are:
+Kotlin Multiplatform library for componentization of Compose UI. The library is based on concepts proposed and implemented
+by awesome [Decompose](https://github.com/arkivanov/Decompose). The differences are:
 
 - Kotlin's coroutine first
 - No dependencies on Android types
