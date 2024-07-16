@@ -12,6 +12,8 @@ are:
 - Avoidance dependencies on Android types
 - Slightly different API
 
+Use it only if you know what you do.
+
 # Dependencies
 
 In `gradle/libs.versions.toml`
