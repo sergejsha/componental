@@ -61,10 +61,14 @@ dependencies {
 }
 ```
 
-# Publishing
+# Releasing
 
 1. Bump version in `root.publication.gradle.kts` of the root project
 2. `./gradlew clean build publishAllPublicationsToCentralRepository`
+
+# Release Notes
+
+0.1 Inital release
 
 # License
 
