@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("module.publication")
-    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.compose)
-    alias(libs.plugins.jetbrains.compose.compiler)
 }
 
 kotlin {
@@ -29,7 +29,7 @@ kotlin {
             implementation(compose.uiTooling)
         }
         commonMain.dependencies {
-            implementation(project(":componental"))
+            api(project(":componental"))
             implementation(compose.foundation)
             implementation(compose.animation)
             implementation(compose.material3)
