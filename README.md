@@ -69,6 +69,7 @@ dependencies {
 
 # Release Notes
 
+0.2 Module `componental` is exposed as API from `componental.compose`
 0.1 Inital release
 
 # License
