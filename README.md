@@ -74,8 +74,9 @@ dependencies {
 
 # Release Notes
 
+* 0.3 Add BackNavigation
 * 0.2 Module `componental` is exposed as API from `componental.compose` 
-* 0.1 Inital release
+* 0.1 Initial release
 
 # License
 
