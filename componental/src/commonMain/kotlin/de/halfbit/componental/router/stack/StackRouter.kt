@@ -1,3 +1,4 @@
+/** Copyright 2024 Halfbit GmbH, Sergej Shafarenka */
 package de.halfbit.componental.router.stack
 
 import de.halfbit.componental.ComponentContext
@@ -32,7 +33,7 @@ public class StackRouter<I : Any> : Router<Event<I>>() {
 
 public fun <I : Any> StackRouter<I>.push(id: I) {
     route(
-        event = Event { keys -> keys + id }
+        event = Event { ids -> ids + id }
     )
 }
 
@@ -56,7 +57,6 @@ public fun <Id : Any, Child : Any> ComponentContext.childStack(
     childFactory: (id: Id, context: ComponentContext) -> Child,
 ): StateFlow<Stack<Id, Child>> {
     val runtimeNodes = mutableMapOf<Id, RuntimeRouteNode<Id, Child>>()
-
     val restoredRoute: Map<Id, RestorableRoute<Id>>? =
         restorator.restoreRoute()?.let {
             ProtoBuf.decodeFromByteArray(
@@ -71,7 +71,7 @@ public fun <Id : Any, Child : Any> ComponentContext.childStack(
         val context = createChildContext(
             childLifecycle = childLifecycle,
             childCoroutineScope = coroutineScope.createChildCoroutineScope(tag),
-            restorator = Restorator(restoredChildState)
+            restorator = Restorator(restoredChildState),
         )
         val node = RouteNode(id, childFactory(id, context))
         return RuntimeRouteNode(
@@ -84,10 +84,10 @@ public fun <Id : Any, Child : Any> ComponentContext.childStack(
         }
     }
 
-    fun Collection<Id>.asStack(): Stack<Id, Child> {
+    fun Collection<Id>.asRuntimeStack(): Stack<Id, Child> {
 
-        val stackNodes = map { key ->
-            runtimeNodes[key] ?: createRuntimeRouteNode(key)
+        val stackNodes = map { id ->
+            runtimeNodes[id] ?: createRuntimeRouteNode(id)
         }
 
         stackNodes.reversed().forEachIndexed { index, node ->
@@ -118,22 +118,22 @@ public fun <Id : Any, Child : Any> ComponentContext.childStack(
     }
 
     return flow {
-        emit(ids.asStack())
+        emit(ids.asRuntimeStack())
         router.events.collect { event ->
             ids = event.transform(ids)
-            emit(ids.asStack())
+            emit(ids.asRuntimeStack())
         }
     }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
-        initial.asStack(),
+        initial.asRuntimeStack(),
     )
 }
 
 private fun <I : Any, C : Any> List<RouteNode<I, C>>.toStack(): Stack<I, C> {
-    check(isNotEmpty()) { "List used as a stack have at least one entry" }
+    check(isNotEmpty()) { "List used as a stack must have at least one entry" }
     return Stack(
         active = last(),
-        inactive = if (size == 1) emptyList() else subList(1, lastIndex),
+        inactive = if (size == 1) emptyList() else subList(0, lastIndex),
     )
 }

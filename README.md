@@ -64,8 +64,13 @@ dependencies {
 
 # Publishing
 
-1. Bump version in `root.publication.gradle.kts` of the root project
+1. Bump version in `root.publication.gradle.kts`
 2. `./gradlew clean build publishAllPublicationsToCentralRepository`
+
+## Local maven
+
+1. Set `X.X-SNAPSHOT` version in `root.publication.gradle.kts`
+2. `./gradlew clean build publishToMavenLocal`
 
 # Release Notes
 
