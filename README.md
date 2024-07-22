@@ -9,7 +9,7 @@ by awesome [Decompose](https://github.com/arkivanov/Decompose). The differences 
 
 - Kotlin's coroutine first
 - No dependencies on Android types
-- Slightly modified API
+- simplified (subjectively) API
 
 Use it only if you know what you do.
 
