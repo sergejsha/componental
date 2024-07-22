@@ -1,3 +1,4 @@
+/** Copyright 2024 Halfbit GmbH, Sergej Shafarenka */
 package de.halfbit.componental.router.slot
 
 import de.halfbit.componental.ComponentContext
@@ -58,7 +59,7 @@ public fun <Id : Any, Child : Any> ComponentContext.childSlot(
         val context = createChildContext(
             childLifecycle = childLifecycle,
             childCoroutineScope = coroutineScope.createChildCoroutineScope(tag),
-            restorator = Restorator(restoredChildState)
+            restorator = Restorator(restoredChildState),
         )
         val node = RouteNode(id, childFactory(id, context))
         return RuntimeRouteNode(
@@ -71,7 +72,7 @@ public fun <Id : Any, Child : Any> ComponentContext.childSlot(
         }
     }
 
-    fun Id?.asSlot(): Slot<Id, Child> {
+    fun Id?.asRuntimeSlot(): Slot<Id, Child> {
         val oldNode = runtimeNode
         val newNode = when (this) {
             null -> {
@@ -108,14 +109,14 @@ public fun <Id : Any, Child : Any> ComponentContext.childSlot(
     }
 
     return flow {
-        emit(activeId.asSlot())
+        emit(activeId.asRuntimeSlot())
         router.events.collect { event ->
             activeId = event.transform(activeId)
-            emit(activeId.asSlot())
+            emit(activeId.asRuntimeSlot())
         }
     }.stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
-        initial.asSlot(),
+        initial.asRuntimeSlot(),
     )
 }

@@ -1,5 +1,7 @@
+/** Copyright 2024 Halfbit GmbH, Sergej Shafarenka */
 package de.halfbit.componental
 
+import de.halfbit.componental.back.BackNavigationOwner
 import de.halfbit.componental.coroutines.CoroutineScopeOwner
 import de.halfbit.componental.lifecycle.Lifecycle
 import de.halfbit.componental.lifecycle.LifecycleOwner
@@ -11,7 +13,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-public interface ComponentContext : LifecycleOwner, CoroutineScopeOwner, RestoratorOwner {
+public interface ComponentContext : LifecycleOwner, CoroutineScopeOwner, RestoratorOwner, BackNavigationOwner {
 
     public companion object {
         public fun create(
@@ -47,9 +49,12 @@ private class DefaultComponentContext(
     override val lifecycle: Lifecycle,
     override val coroutineScope: CoroutineScope,
     override val restorator: Restorator,
-) : ComponentContext
+) : ComponentContext,
+    BackNavigationOwner by BackNavigationOwner.create(lifecycle)
 
-internal inline fun ComponentContext.doOnDestroy(crossinline callback: () -> Unit): ComponentContext {
+internal inline fun ComponentContext.doOnDestroy(
+    crossinline callback: () -> Unit
+): ComponentContext {
     lifecycle.subscribe(
         object : Lifecycle.Subscriber.Callbacks {
             override fun onDestroy() {
