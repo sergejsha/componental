@@ -7,8 +7,9 @@ compose-plugin = "1.6.11"
 kotlinx-coroutines = "1.8.1"
 kotlinx-atomicfu = "0.25.0"
 kotlinx-serialization = "1.7.1"
-androidx-lifecycle = "2.8.3"
+androidx-lifecycle = "2.8.4"
 androidx-savedstate = "1.2.1"
+androidx-activity = "1.9.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -18,6 +19,7 @@ kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "k
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinx-serialization" }
 androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-common", version.ref = "androidx-lifecycle" }
 androidx-savedstate = { module = "androidx.savedstate:savedstate", version.ref = "androidx-savedstate" }
+androidx-activity = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }

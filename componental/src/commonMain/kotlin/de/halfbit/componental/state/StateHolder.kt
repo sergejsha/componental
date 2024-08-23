@@ -96,10 +96,6 @@ private class DefaultMutableStateHolder<S : Any>(
         )
 
     override fun updateState(reducer: (S) -> S) {
-        @OptIn(DelicateCoroutinesApi::class)
-        if (channel.isClosedForSend) {
-            return
-        }
         if (channel.trySend(reducer).isFailure) {
             throw IllegalStateException("Failed to schedule reducer")
         }

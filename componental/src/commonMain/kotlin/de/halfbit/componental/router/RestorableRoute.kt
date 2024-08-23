@@ -3,8 +3,8 @@ package de.halfbit.componental.router
 import kotlinx.serialization.Serializable
 
 @Serializable
-public class RestorableRoute<Id : Any>(
-    public val id: Id,
+public class RestorableRoute<R : Any>(
+    public val route: R,
     private var childState: ByteArray?,
 ) {
     public fun consumeChildState(): ByteArray? =

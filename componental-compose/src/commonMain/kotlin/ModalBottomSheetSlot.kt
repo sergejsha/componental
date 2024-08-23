@@ -32,7 +32,7 @@ public fun <I : Any, C : Any> ModalBottomSheetSlot(
                 current = null
             }
         } else {
-            if (current?.component?.id != active.id) {
+            if (current?.component?.route != active.route) {
                 current?.sheetState?.hide()
                 current = null
             }
@@ -79,7 +79,7 @@ private fun <I : Any, C : Any> createBottomSheetSlotState(
                 onDismissRequest = onSlotDismissed,
                 dragHandle = {}, // disable drag handle
                 scrimColor = MaterialTheme.colorScheme.scrim.copy(scrimAlpha),
-                content = { content(active.id, active.child) }
+                content = { content(active.route, active.child) }
             )
         }
     )

@@ -2,6 +2,7 @@
 package de.halfbit.componental.router.slot
 
 import de.halfbit.componental.ComponentContext
+import de.halfbit.componental.Componental
 import de.halfbit.componental.coroutines.createChildCoroutineScope
 import de.halfbit.componental.createChildContext
 import de.halfbit.componental.lifecycle.Lifecycle.State
@@ -11,49 +12,42 @@ import de.halfbit.componental.router.RestorableRoute
 import de.halfbit.componental.router.RouteNode
 import de.halfbit.componental.router.Router
 import de.halfbit.componental.router.RuntimeRouteNode
-import de.halfbit.componental.router.slot.SlotRouter.Event
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.protobuf.ProtoBuf
 
-public data class Slot<out I : Any, out C : Any>(
-    val active: RouteNode<I, C>? = null,
+public data class Slot<out R : Any, out C : Any>(
+    val active: RouteNode<R, C>? = null,
 )
 
-public class SlotRouter<I : Any> : Router<Event<I>>() {
-    public class Event<I : Any>(
-        public val transform: (active: I?) -> I?,
-    )
+public class SlotRouter<R : Any> : Router<TransformSlot<R>>()
+public typealias TransformSlot<R> = (active: R?) -> R?
+
+public fun <R : Any> SlotRouter<R>.set(active: R?) {
+    route { _ -> active }
 }
 
-public fun <I : Any> SlotRouter<I>.set(active: I?) {
-    route(
-        event = Event { _ -> active }
-    )
-}
+@OptIn(ExperimentalSerializationApi::class)
+public fun <Route : Any, Child : Any> ComponentContext.childSlot(
+    router: SlotRouter<Route>,
+    initial: Route? = null,
+    serializer: () -> KSerializer<Route>,
+    childFactory: (route: Route, context: ComponentContext) -> Child,
+): StateFlow<Slot<Route, Child>> {
+    var runtimeNode: RuntimeRouteNode<Route, Child>? = null
 
-public fun <Id : Any, Child : Any> ComponentContext.childSlot(
-    router: SlotRouter<Id>,
-    initial: Id? = null,
-    serializer: () -> KSerializer<Id>,
-    childFactory: (id: Id, context: ComponentContext) -> Child,
-): StateFlow<Slot<Id, Child>> {
-    var runtimeNode: RuntimeRouteNode<Id, Child>? = null
-
-    val restoredRoute: RestorableRoute<Id>? =
+    val restoredRoute: RestorableRoute<Route>? =
         restorator.restoreRoute()?.let {
             ProtoBuf.decodeFromByteArray(
                 RestorableRoute.serializer(serializer()), it
             )
         }
 
-    fun createRuntimeRouteNode(id: Id): RuntimeRouteNode<Id, Child> {
-        val tag = "id:${id::class.simpleName.toString()}"
+    fun createRuntimeRouteNode(route: Route): RuntimeRouteNode<Route, Child> {
+        val tag = "route:${route::class.simpleName.toString()}"
         val childLifecycle = lifecycle.createMutableChildLifecycle()
-        val restoredChildState = if (restoredRoute?.id == id) {
+        val restoredChildState = if (restoredRoute?.route == route) {
             restoredRoute.consumeChildState()
         } else null
         val context = createChildContext(
@@ -61,18 +55,19 @@ public fun <Id : Any, Child : Any> ComponentContext.childSlot(
             childCoroutineScope = coroutineScope.createChildCoroutineScope(tag),
             restorator = Restorator(restoredChildState),
         )
-        val node = RouteNode(id, childFactory(id, context))
+        val node = RouteNode(route, childFactory(route, context))
         return RuntimeRouteNode(
             node = node,
             lifecycle = childLifecycle,
             restorator = context.restorator,
         ).also { newNode ->
+            Componental.debug("SLOT Created: ${newNode.node.route}")
             runtimeNode = newNode
             childLifecycle.moveToState(State.Resumed)
         }
     }
 
-    fun Id?.asRuntimeSlot(): Slot<Id, Child> {
+    fun Route?.asRuntimeSlot(): Slot<Route, Child> {
         val oldNode = runtimeNode
         val newNode = when (this) {
             null -> {
@@ -81,7 +76,7 @@ public fun <Id : Any, Child : Any> ComponentContext.childSlot(
             }
 
             else -> when {
-                oldNode == null || this != oldNode.node.id -> {
+                oldNode == null || this != oldNode.node.route -> {
                     createRuntimeRouteNode(this)
                 }
 
@@ -90,33 +85,40 @@ public fun <Id : Any, Child : Any> ComponentContext.childSlot(
         }
 
         if (oldNode != null && oldNode != newNode) {
+            Componental.debug("SLOT Destroyed: ${oldNode.node.route}")
             oldNode.lifecycle.moveToState(State.Destroyed)
         }
 
         return Slot(active = newNode?.node)
     }
 
-    var activeId = restoredRoute?.id ?: initial
+    var activeRoute = restoredRoute?.route ?: initial
     restorator.storeRoute {
-        val id = activeId ?: return@storeRoute null
+        val route = activeRoute ?: return@storeRoute null
         ProtoBuf.encodeToByteArray(
             RestorableRoute.serializer(serializer()),
             RestorableRoute(
-                id = id,
+                route = route,
                 childState = runtimeNode?.restorator?.storeAll()
             )
         )
     }
 
     return flow {
-        emit(activeId.asRuntimeSlot())
-        router.events.collect { event ->
-            activeId = event.transform(activeId)
-            emit(activeId.asRuntimeSlot())
+        emit(activeRoute)
+        router.transformers.collect { transform ->
+            activeRoute = transform(activeRoute)
+            emit(activeRoute)
         }
-    }.stateIn(
-        coroutineScope,
-        SharingStarted.Eagerly,
-        initial.asRuntimeSlot(),
-    )
+    }.distinctUntilChanged()
+        .map { it to it.asRuntimeSlot() }
+        .map { (route, slot) ->
+            Componental.debug("SLOT Active: $route")
+            slot
+        }
+        .stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            initial.asRuntimeSlot(),
+        )
 }

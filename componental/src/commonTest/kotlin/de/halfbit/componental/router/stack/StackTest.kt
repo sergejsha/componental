@@ -14,6 +14,50 @@ import kotlin.test.assertTrue
 class StackTest {
 
     @Test
+    fun replace_replacesLastItemInSingleItemList() = runExitingTest {
+        val (router, _, events) = createStackRouter(stack = listOf<Id>(Id.Page1))
+        events.receive()
+
+        router.replace(Id.Page2)
+        val actual = events.receive()
+        val expected = Stack(active = page2(), inactive = listOf())
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun replace_replacesLastItemInManyItemsList() = runExitingTest {
+        val (router, _, events) = createStackRouter(stack = listOf(Id.Page1, Id.Page2))
+        events.receive()
+
+        router.replace(Id.Page3)
+        val actual = events.receive()
+        val expected = Stack(active = page3(), inactive = listOf(page1()))
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun replaceAll_replacesAllInSingleItemList() = runExitingTest {
+        val (router, _, events) = createStackRouter(stack = listOf<Id>(Id.Page1))
+        events.receive()
+
+        router.replaceAll(Id.Page2)
+        val actual = events.receive()
+        val expected = Stack(active = page2(), inactive = listOf())
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun replaceAll_replacesAllInManyItemsList() = runExitingTest {
+        val (router, _, events) = createStackRouter(stack = listOf(Id.Page1, Id.Page2))
+        events.receive()
+
+        router.replaceAll(Id.Page3)
+        val actual = events.receive()
+        val expected = Stack(active = page3(), inactive = emptyList())
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun push_addsPagesToStack() = runExitingTest {
 
         val (router, _, events) = createStackRouter(stack = listOf<Id>(Id.Page1))

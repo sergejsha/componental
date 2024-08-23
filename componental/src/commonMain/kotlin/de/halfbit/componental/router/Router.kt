@@ -1,18 +1,23 @@
 /** Copyright 2024 Halfbit GmbH, Sergej Shafarenka */
 package de.halfbit.componental.router
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 
-public abstract class Router<Event : Any> {
-    private val mutableEventFlow =
-        MutableSharedFlow<Event>(extraBufferCapacity = 32)
+public abstract class Router<Transform : Any> {
+    private val channel = Channel<Transform>(capacity = 64)
 
-    public val events: Flow<Event>
-        get() = mutableEventFlow.asSharedFlow()
+    public val transformers: Flow<Transform> =
+        flow {
+            while (true)
+                emit(channel.receive())
+        }.onCompletion {
+            channel.close()
+        }
 
-    public fun route(event: Event) {
-        check(mutableEventFlow.tryEmit(event)) { "Cannot process event: $event" }
+    public fun route(transform: Transform) {
+        if (channel.trySend(transform).isFailure) {
+            throw IllegalStateException("Failed to schedule transform")
+        }
     }
 }

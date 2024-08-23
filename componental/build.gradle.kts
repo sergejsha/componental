@@ -31,6 +31,7 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation(libs.androidx.activity)
             implementation(libs.androidx.lifecycle)
             implementation(libs.androidx.savedstate)
         }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import de.halfbit.componental.router.slot.Slot
 
@@ -18,28 +19,39 @@ public fun <I : Any, C : Any> BoxScope.ToastSlot(
 ) {
     val active = slot.active
     if (active != null) {
-        Surface(
-            modifier = Modifier
-                .padding(8.dp)
-                .align(Alignment.BottomCenter),
-            shape = RoundedCornerShape(8.dp),
-            shadowElevation = 2.dp,
-        ) {
-            content(active.id, active.child)
+        ToastSurface {
+            content(active.route, active.child)
         }
     }
 }
 
 @Composable
+public fun BoxScope.ToastSurface(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .padding(8.dp)
+            .align(Alignment.BottomCenter),
+        shape = RoundedCornerShape(8.dp),
+        shadowElevation = 2.dp,
+        content = content,
+    )
+}
+
+@Composable
 public fun ToastError(
     text: String,
+    actionText: String,
     onSlotDismissed: () -> Unit,
 ) {
-    ToastView(
+    Toast(
         text = text,
-        buttonText = "Close",
+        buttonText = actionText,
         color = MaterialTheme.colorScheme.onErrorContainer,
         backgroundColor = MaterialTheme.colorScheme.errorContainer,
+        buttonColor = MaterialTheme.colorScheme.onErrorContainer,
         onSlotDismissed = onSlotDismissed,
     )
 }
@@ -47,11 +59,12 @@ public fun ToastError(
 @Composable
 public fun ToastInfo(
     text: String,
+    actionText: String,
     onSlotDismissed: () -> Unit,
 ) {
-    ToastView(
+    Toast(
         text = text,
-        buttonText = "Ok",
+        buttonText = actionText,
         color = MaterialTheme.colorScheme.inverseOnSurface,
         backgroundColor = MaterialTheme.colorScheme.inverseSurface,
         buttonColor = MaterialTheme.colorScheme.inversePrimary,
@@ -60,12 +73,12 @@ public fun ToastInfo(
 }
 
 @Composable
-private fun ToastView(
+private fun Toast(
     text: String,
     buttonText: String,
     color: Color,
     backgroundColor: Color,
-    buttonColor: Color = MaterialTheme.colorScheme.primary,
+    buttonColor: Color,
     onSlotDismissed: () -> Unit,
 ) {
     Row(
@@ -89,7 +102,10 @@ private fun ToastView(
                 contentColor = buttonColor,
             ),
         ) {
-            Text(text = buttonText.uppercase())
+            Text(
+                text = buttonText,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }

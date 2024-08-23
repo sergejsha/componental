@@ -9,24 +9,24 @@ import androidx.compose.runtime.Composable
 import de.halfbit.componental.router.stack.Stack
 
 @Composable
-public fun <K : Any, C : Any> StackChildren(
-    stack: Stack<K, C>,
-    content: @Composable (key: K, child: C) -> Unit,
+public inline fun <R : Any, C : Any> StackChildren(
+    stack: Stack<R, C>,
+    crossinline content: @Composable (active: C) -> Unit,
 ) {
     AnimatedContent(
         targetState = stack.active,
         label = "StackChildren",
-        contentKey = { child -> child.id },
+        contentKey = { it.route },
         transitionSpec = {
             fadeIn(
-                animationSpec = tween(220, delayMillis = 50),
+                animationSpec = tween(220, delayMillis = 70),
                 initialAlpha = 0f,
             ) togetherWith fadeOut(
                 animationSpec = tween(220),
                 targetAlpha = 1f,
             )
         },
-    ) { child ->
-        content(child.id, child.child)
+    ) { active ->
+        content(active.child)
     }
 }
