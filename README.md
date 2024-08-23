@@ -20,7 +20,7 @@ In `gradle/libs.versions.toml`
 ```toml
 [versions]
 kotlin = "2.0.0"
-componental = "0.2"
+componental = "0.3"
 
 [libraries]
 componental = { module = "de.halfbit:componental", version.ref = "componental" }
