@@ -1,5 +1,6 @@
 package de.halfbit.componental.restorator
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -13,23 +14,19 @@ public interface Restorator {
     public fun storeAll(): ByteArray
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 private class DefaultRestorator(
     bytes: ByteArray?,
 ) : Restorator {
-    private val consumable: ConsumableList
     private val storableRouters = mutableListOf<() -> ByteArray?>()
-
-    init {
-        consumable =
-            ConsumableList(
-                bytes?.let {
-                    ProtoBuf
-                        .decodeFromByteArray(routersSerializer, bytes)
-                        .map { if (it.isEmpty()) null else it }
-                        .toMutableList()
-                }
-            )
-    }
+    private val consumable: ConsumableList = ConsumableList(
+        bytes?.let {
+            ProtoBuf
+                .decodeFromByteArray(routersSerializer, bytes)
+                .map { if (it.isEmpty()) null else it }
+                .toMutableList()
+        }
+    )
 
     override fun restoreRoute(): ByteArray? =
         consumable.consume()
@@ -59,8 +56,8 @@ private class ConsumableList(
         if (position >= bytes.size) {
             throw IllegalStateException(
                 "Restore for a not stored child requested." +
-                    " Stored children count: ${bytes.size}," +
-                    " requested position: $position"
+                        " Stored children count: ${bytes.size}," +
+                        " requested position: $position"
             )
         }
         return bytes[position].also {

@@ -19,8 +19,8 @@ In `gradle/libs.versions.toml`
 
 ```toml
 [versions]
-kotlin = "2.0.0"
-componental = "0.4"
+kotlin = "2.0.20"
+componental = "0.5"
 
 [libraries]
 componental = { module = "de.halfbit:componental", version.ref = "componental" }
@@ -74,6 +74,7 @@ dependencies {
 
 # Release Notes
 
+* 0.5 Improve Toast API and UI, bump to Kotlin 2.0.20
 * 0.4 Refine Stack and Slot API and their implementations
 * 0.3 Add BackNavigation
 * 0.2 Module `componental` is exposed as API from `componental.compose`

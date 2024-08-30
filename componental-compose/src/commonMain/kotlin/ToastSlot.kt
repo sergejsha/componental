@@ -13,14 +13,15 @@ import androidx.compose.ui.unit.dp
 import de.halfbit.componental.router.slot.Slot
 
 @Composable
-public fun <I : Any, C : Any> BoxScope.ToastSlot(
+public inline fun <I : Any, C : Any> BoxScope.ToastSlot(
     slot: Slot<I, C>,
-    content: @Composable (id: I, child: C) -> Unit,
+    modifier: Modifier = Modifier,
+    crossinline content: @Composable (child: C) -> Unit,
 ) {
     val active = slot.active
     if (active != null) {
-        ToastSurface {
-            content(active.route, active.child)
+        ToastSurface(modifier = modifier) {
+            content(active.child)
         }
     }
 }
@@ -32,10 +33,11 @@ public fun BoxScope.ToastSurface(
 ) {
     Surface(
         modifier = modifier
-            .padding(8.dp)
+            .padding(horizontal = 32.dp)
+            .padding(bottom = 24.dp)
             .align(Alignment.BottomCenter),
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 2.dp,
+        shadowElevation = 6.dp,
         content = content,
     )
 }
@@ -85,12 +87,13 @@ private fun Toast(
         modifier = Modifier
             .background(backgroundColor)
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
             .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp),
             text = text,
             style = MaterialTheme.typography.bodyMedium,
             color = color,
