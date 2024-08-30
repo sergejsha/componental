@@ -28,6 +28,10 @@ public fun <R : Any> SlotRouter<R>.set(active: R?) {
     route { _ -> active }
 }
 
+public fun <R : Any> SlotRouter<R>.clear() {
+    route { _ -> null }
+}
+
 @OptIn(ExperimentalSerializationApi::class)
 public fun <Route : Any, Child : Any> ComponentContext.childSlot(
     router: SlotRouter<Route>,

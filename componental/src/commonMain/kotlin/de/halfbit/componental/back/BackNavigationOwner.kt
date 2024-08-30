@@ -4,7 +4,7 @@ package de.halfbit.componental.back
 import de.halfbit.componental.lifecycle.Lifecycle
 
 public interface BackNavigationOwner {
-    public val backNavigation : BackNavigation
+    public val backNavigation: BackNavigation
 
     public companion object {
         public fun create(lifecycle: Lifecycle): BackNavigationOwner =
@@ -29,6 +29,6 @@ public interface BackNavigationOwner {
     }
 }
 
-public inline fun BackNavigationOwner.onNavigateBack(onNavigateBack: OnNavigateBack) {
+public fun BackNavigationOwner.onNavigateBack(onNavigateBack: OnNavigateBack) {
     backNavigation.register(onNavigateBack)
 }
