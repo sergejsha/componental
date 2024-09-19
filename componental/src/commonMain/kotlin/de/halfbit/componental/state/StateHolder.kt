@@ -2,20 +2,9 @@ package de.halfbit.componental.state
 
 import de.halfbit.componental.ComponentContext
 import de.halfbit.componental.coroutines.ComponentalDispatchers
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.flow.*
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
@@ -96,8 +85,11 @@ private class DefaultMutableStateHolder<S : Any>(
         )
 
     override fun updateState(reducer: (S) -> S) {
-        if (channel.trySend(reducer).isFailure) {
-            throw IllegalStateException("Failed to schedule reducer")
+        val result = channel.trySend(reducer)
+        if (result.isFailure && !result.isClosed) {
+            throw IllegalStateException(
+                "Failed to schedule reducer to a not closed channel"
+            )
         }
     }
 

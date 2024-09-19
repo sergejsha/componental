@@ -2,7 +2,9 @@
 package de.halfbit.componental.router
 
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
 
 public abstract class Router<Transform : Any> {
     private val channel = Channel<Transform>(capacity = 64)
@@ -16,8 +18,11 @@ public abstract class Router<Transform : Any> {
         }
 
     public fun route(transform: Transform) {
-        if (channel.trySend(transform).isFailure) {
-            throw IllegalStateException("Failed to schedule transform")
+        val result = channel.trySend(transform)
+        if (result.isFailure && !result.isClosed) {
+            throw IllegalStateException(
+                "Failed to schedule transform to a not closed channel"
+            )
         }
     }
 }

@@ -74,6 +74,7 @@ dependencies {
 
 # Release Notes
 
+* 0.6 Better handling of closed channels
 * 0.5 Improve Toast API and UI, bump to Kotlin 2.0.20
 * 0.4 Refine Stack and Slot API and their implementations
 * 0.3 Add BackNavigation
