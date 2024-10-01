@@ -7,7 +7,7 @@ compose-plugin = "1.6.11"
 kotlinx-coroutines = "1.9.0"
 kotlinx-atomicfu = "0.25.0"
 kotlinx-serialization = "1.7.3"
-androidx-lifecycle = "2.8.4"
+androidx-lifecycle = "2.8.6"
 androidx-savedstate = "1.2.1"
 androidx-activity = "1.9.1"
 
