@@ -12,10 +12,10 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.serialization.Serializable
 
 fun TestScope.createSlotRouter(
-    slot: Id? = null,
+    slot: Route? = null,
     lifecycleState: Lifecycle.State = Lifecycle.State.Resumed,
-): Pair<SlotRouter<Id>, Channel<Slot<Id, Child>>> {
-    val router = SlotRouter<Id>()
+): Pair<SlotRouter<Route>, Channel<Slot<Child>>> {
+    val router = SlotRouter<Route>("TestRouter")
     val lifecycle = MutableLifecycle.create()
     val context = ComponentContext.create(
         lifecycle = lifecycle,
@@ -24,14 +24,14 @@ fun TestScope.createSlotRouter(
     )
     val stackFlow = context.childSlot(
         router = router,
-        initial = slot,
-        serializer = { Id.serializer() },
+        initial = { slot },
+        serializer = { Route.serializer() },
         childFactory = { id, _ ->
             when (id) {
-                Id.Page1 -> Child.Page1
-                Id.Page2 -> Child.Page2
-                Id.Page3 -> Child.Page3
-                Id.Page4 -> Child.Page4
+                Route.Page1 -> Child.Page1
+                Route.Page2 -> Child.Page2
+                Route.Page3 -> Child.Page3
+                Route.Page4 -> Child.Page4
             }
         },
     )
@@ -40,10 +40,10 @@ fun TestScope.createSlotRouter(
     return router to stackFlow.collectIntoChannel(this)
 }
 
-fun page1(): RouteNode<Id, Child> = RouteNode(Id.Page1, Child.Page1)
-fun page2(): RouteNode<Id, Child> = RouteNode(Id.Page2, Child.Page2)
-fun page3(): RouteNode<Id, Child> = RouteNode(Id.Page3, Child.Page3)
-fun page4(): RouteNode<Id, Child> = RouteNode(Id.Page4, Child.Page4)
+fun page1(): RouteNode<Child> = RouteNode(Route.Page1, Child.Page1)
+fun page2(): RouteNode<Child> = RouteNode(Route.Page2, Child.Page2)
+fun page3(): RouteNode<Child> = RouteNode(Route.Page3, Child.Page3)
+fun page4(): RouteNode<Child> = RouteNode(Route.Page4, Child.Page4)
 
 sealed interface Child {
     data object Page1 : Child
@@ -53,16 +53,16 @@ sealed interface Child {
 }
 
 @Serializable
-sealed interface Id {
+sealed interface Route {
     @Serializable
-    data object Page1 : Id
+    data object Page1 : Route
 
     @Serializable
-    data object Page2 : Id
+    data object Page2 : Route
 
     @Serializable
-    data object Page3 : Id
+    data object Page3 : Route
 
     @Serializable
-    data object Page4 : Id
+    data object Page4 : Route
 }

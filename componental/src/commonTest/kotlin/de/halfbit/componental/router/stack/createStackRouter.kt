@@ -12,10 +12,10 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.serialization.Serializable
 
 fun TestScope.createStackRouter(
-    stack: List<Id>,
+    stack: List<Route>,
     lifecycleState: Lifecycle.State = Lifecycle.State.Resumed,
-): Triple<StackRouter<Id>, ComponentContext, Channel<Stack<Id, Child>>> {
-    val router = StackRouter<Id>()
+): Triple<StackRouter<Route>, ComponentContext, Channel<Stack<Child>>> {
+    val router = StackRouter<Route>("TestRouter")
     val lifecycle = MutableLifecycle.create()
     val context = ComponentContext.create(
         lifecycle = lifecycle,
@@ -24,14 +24,14 @@ fun TestScope.createStackRouter(
     )
     val stackFlow = context.childStack(
         router = router,
-        initial = stack,
-        serializer = { Id.serializer() },
+        initial = { stack },
+        serializer = { Route.serializer() },
         childFactory = { id, _ ->
             when (id) {
-                Id.Page1 -> Child.Page1
-                Id.Page2 -> Child.Page2
-                Id.Page3 -> Child.Page3
-                Id.Page4 -> Child.Page4
+                Route.Page1 -> Child.Page1
+                Route.Page2 -> Child.Page2
+                Route.Page3 -> Child.Page3
+                Route.Page4 -> Child.Page4
             }
         },
     )
@@ -39,10 +39,10 @@ fun TestScope.createStackRouter(
     return Triple(router, context, stackFlow.collectIntoChannel(this))
 }
 
-fun page1(): RouteNode<Id, Child> = RouteNode(Id.Page1, Child.Page1)
-fun page2(): RouteNode<Id, Child> = RouteNode(Id.Page2, Child.Page2)
-fun page3(): RouteNode<Id, Child> = RouteNode(Id.Page3, Child.Page3)
-fun page4(): RouteNode<Id, Child> = RouteNode(Id.Page4, Child.Page4)
+fun page1(): RouteNode<Child> = RouteNode(Route.Page1, Child.Page1)
+fun page2(): RouteNode<Child> = RouteNode(Route.Page2, Child.Page2)
+fun page3(): RouteNode<Child> = RouteNode(Route.Page3, Child.Page3)
+fun page4(): RouteNode<Child> = RouteNode(Route.Page4, Child.Page4)
 
 sealed interface Child {
     data object Page1 : Child
@@ -52,16 +52,16 @@ sealed interface Child {
 }
 
 @Serializable
-sealed interface Id {
+sealed interface Route {
     @Serializable
-    data object Page1 : Id
+    data object Page1 : Route
 
     @Serializable
-    data object Page2 : Id
+    data object Page2 : Route
 
     @Serializable
-    data object Page3 : Id
+    data object Page3 : Route
 
     @Serializable
-    data object Page4 : Id
+    data object Page4 : Route
 }

@@ -11,9 +11,8 @@ import kotlinx.coroutines.test.runTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun runExitingTest(testBody: suspend TestScope.() -> Unit) {
-    Componental.setLogger { level, message, err ->
-        println("Componental: [$level] $message")
-        err?.printStackTrace()
+    Componental.setLogger { tag, message ->
+        println("Componental: $tag $message")
     }
     val exitingException = CancellationException("exited properly")
     try {

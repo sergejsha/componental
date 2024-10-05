@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import de.halfbit.componental.router.stack.Stack
 
 @Composable
-public inline fun <R : Any, C : Any> StackChildren(
-    stack: Stack<R, C>,
+public inline fun <C : Any> StackChildren(
+    stack: Stack<C>,
     crossinline content: @Composable (active: C) -> Unit,
 ) {
     AnimatedContent(

@@ -3,7 +3,11 @@
 package de.halfbit.componental.compose
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,12 +20,12 @@ import de.halfbit.componental.router.RouteNode
 import de.halfbit.componental.router.slot.Slot
 
 @Composable
-public fun <I : Any, C : Any> ModalBottomSheetSlot(
-    slot: Slot<I, C>,
+public fun <C : Any> ModalBottomSheetSlot(
+    slot: Slot<C>,
     onSlotDismissed: () -> Unit,
-    content: @Composable (id: I, child: C) -> Unit,
+    content: @Composable (child: C) -> Unit,
 ) {
-    var current by remember { mutableStateOf<BottomSheetSlotState<I, C>?>(null) }
+    var current by remember { mutableStateOf<BottomSheetSlotState<C>?>(null) }
     val density = LocalDensity.current
     val active = slot.active
 
@@ -55,12 +59,12 @@ public fun <I : Any, C : Any> ModalBottomSheetSlot(
     current?.content?.invoke()
 }
 
-private fun <I : Any, C : Any> createBottomSheetSlotState(
-    active: RouteNode<I, C>,
+private fun <C : Any> createBottomSheetSlotState(
+    active: RouteNode<C>,
     density: Density,
     onSlotDismissed: () -> Unit,
-    content: @Composable (id: I, child: C) -> Unit,
-): BottomSheetSlotState<I, C> {
+    content: @Composable (child: C) -> Unit,
+): BottomSheetSlotState<C> {
     val sheetState = SheetState(
         skipPartiallyExpanded = true,
         density = density,
@@ -79,14 +83,14 @@ private fun <I : Any, C : Any> createBottomSheetSlotState(
                 onDismissRequest = onSlotDismissed,
                 dragHandle = {}, // disable drag handle
                 scrimColor = MaterialTheme.colorScheme.scrim.copy(scrimAlpha),
-                content = { content(active.route, active.child) }
+                content = { content(active.child) }
             )
         }
     )
 }
 
-private class BottomSheetSlotState<out I : Any, out C : Any>(
-    val component: RouteNode<I, C>,
+private class BottomSheetSlotState<out C : Any>(
+    val component: RouteNode<C>,
     val sheetState: SheetState,
     val content: @Composable () -> Unit,
 )

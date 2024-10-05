@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 
-public abstract class Router<Transform : Any> {
+public abstract class Router<Transform : Any>(
+    public val name: String
+) {
     private val channel = Channel<Transform>(capacity = 64)
 
     public val transformers: Flow<Transform> =

@@ -1,9 +1,18 @@
 package de.halfbit.componental.compose
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import de.halfbit.componental.router.slot.Slot
 
 @Composable
-public inline fun <I : Any, C : Any> BoxScope.ToastSlot(
-    slot: Slot<I, C>,
+public inline fun <C : Any> BoxScope.ToastSlot(
+    slot: Slot<C>,
     modifier: Modifier = Modifier,
     crossinline content: @Composable (child: C) -> Unit,
 ) {

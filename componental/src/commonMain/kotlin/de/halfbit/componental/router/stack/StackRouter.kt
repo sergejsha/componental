@@ -12,18 +12,23 @@ import de.halfbit.componental.router.RestorableRoute
 import de.halfbit.componental.router.RouteNode
 import de.halfbit.componental.router.Router
 import de.halfbit.componental.router.RuntimeRouteNode
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.protobuf.ProtoBuf
 
-public data class Stack<out I : Any, out C : Any>(
-    val active: RouteNode<I, C>,
-    val inactive: List<RouteNode<I, C>>
+public data class Stack<out C : Any>(
+    val active: RouteNode<C>,
+    val inactive: List<RouteNode<C>>
 )
 
-public class StackRouter<R : Any> : Router<TransformStack<R>>()
+public class StackRouter<R : Any>(name: String) : Router<TransformStack<R>>(name)
 public typealias TransformStack<R> = (routes: List<R>) -> List<R>
 
 public fun <R : Any> StackRouter<R>.push(route: R) {
@@ -54,11 +59,11 @@ public fun <R : Any> StackRouter<R>.replaceAll(route: R) {
 @OptIn(ExperimentalSerializationApi::class)
 public fun <Route : Any, Child : Any> ComponentContext.childStack(
     router: StackRouter<Route>,
-    initial: List<Route>,
+    initial: () -> List<Route>,
     serializer: () -> KSerializer<Route>,
     childFactory: (route: Route, context: ComponentContext) -> Child,
-): StateFlow<Stack<Route, Child>> {
-    val runtimeNodes = mutableMapOf<Route, RuntimeRouteNode<Route, Child>>()
+): StateFlow<Stack<Child>> {
+    val runtimeNodes = mutableMapOf<Route, RuntimeRouteNode<Child>>()
     val restoredRoute: Map<Route, RestorableRoute<Route>>? =
         restorator.restoreRoute()?.let {
             ProtoBuf.decodeFromByteArray(
@@ -66,10 +71,10 @@ public fun <Route : Any, Child : Any> ComponentContext.childStack(
             ).associateBy { route -> route.route }
         }
 
-    fun createRuntimeRouteNode(route: Route): RuntimeRouteNode<Route, Child> {
-        val tag = "route:${route::class.simpleName.toString()}"
+    fun createRuntimeRouteNode(route: Route): RuntimeRouteNode<Child> {
         val childLifecycle = lifecycle.createMutableChildLifecycle()
         val restoredChildState = restoredRoute?.get(route)?.consumeChildState()
+        val tag = "route:${route::class.simpleName.toString()}"
         val context = createChildContext(
             childLifecycle = childLifecycle,
             childCoroutineScope = coroutineScope.createChildCoroutineScope(tag),
@@ -81,13 +86,14 @@ public fun <Route : Any, Child : Any> ComponentContext.childStack(
             lifecycle = childLifecycle,
             restorator = context.restorator,
         ).also { newNode ->
-            Componental.debug("STACK Created: ${newNode.node.route}")
+            val operation = if (restoredChildState == null) "created" else "restored"
+            Componental.log("STACK ${router.name}", "($operation): ${newNode.node.route}")
             runtimeNodes[route] = newNode
             childLifecycle.moveToState(State.Resumed)
         }
     }
 
-    fun Collection<Route>.asRuntimeStack(): Stack<Route, Child> {
+    fun Collection<Route>.asRuntimeStack(): Stack<Child> {
         val stackNodes = map { route ->
             runtimeNodes[route] ?: createRuntimeRouteNode(route)
         }
@@ -99,7 +105,7 @@ public fun <Route : Any, Child : Any> ComponentContext.childStack(
 
         val destroyedRoutes = runtimeNodes.keys - toSet()
         destroyedRoutes.forEach { route ->
-            Componental.debug("STACK Destroyed: $route")
+            Componental.log("STACK ${router.name}", "(destroyed): $route")
             runtimeNodes[route]?.lifecycle?.moveToState(State.Destroyed)
         }
 
@@ -107,7 +113,8 @@ public fun <Route : Any, Child : Any> ComponentContext.childStack(
         return stackNodes.map { it.node }.toStack()
     }
 
-    var routes = restoredRoute?.keys?.toList() ?: initial
+    val restoredInitial = restoredRoute?.keys?.toList() ?: initial()
+    var routes = restoredInitial
     restorator.storeRoute {
         ProtoBuf.encodeToByteArray(
             ListSerializer(RestorableRoute.serializer(serializer())),
@@ -129,17 +136,17 @@ public fun <Route : Any, Child : Any> ComponentContext.childStack(
     }.distinctUntilChanged()
         .map { it.asRuntimeStack() to it }
         .map { (stack, routes) ->
-            Componental.debug("STACK Current: $routes")
+            Componental.log("STACK ${router.name}", "$routes")
             stack
         }
         .stateIn(
             coroutineScope,
             SharingStarted.Eagerly,
-            initial.asRuntimeStack(),
+            restoredInitial.asRuntimeStack(),
         )
 }
 
-private fun <R : Any, C : Any> List<RouteNode<R, C>>.toStack(): Stack<R, C> {
+private fun <C : Any> List<RouteNode<C>>.toStack(): Stack<C> {
     check(isNotEmpty()) { "List used as a stack must have at least one entry" }
     return Stack(
         active = last(),
