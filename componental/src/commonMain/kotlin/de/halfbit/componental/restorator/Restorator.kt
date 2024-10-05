@@ -9,6 +9,7 @@ public fun Restorator(bytes: ByteArray?): Restorator =
     DefaultRestorator(bytes)
 
 public interface Restorator {
+    public val canRestore: Boolean
     public fun restoreRoute(): ByteArray?
     public fun storeRoute(block: () -> ByteArray?)
     public fun storeAll(): ByteArray
@@ -27,6 +28,8 @@ private class DefaultRestorator(
                 .toMutableList()
         }
     )
+
+    override val canRestore: Boolean = bytes != null
 
     override fun restoreRoute(): ByteArray? =
         consumable.consume()

@@ -1,9 +1,6 @@
 package de.halfbit.componental.restorator
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class RestoratorTest {
 
@@ -33,6 +30,37 @@ class RestoratorTest {
 
         // assert
         assertNull(routeByte)
+    }
+
+    @Test
+    fun `routeOnCreate is not called when restoring`() {
+        // prepare
+        val restorator = Restorator(null)
+        restorator.storeRoute { null }
+        val bytes = restorator.storeAll()
+
+        // test
+        val restorator2 = Restorator(bytes)
+        var called = false
+
+        restoratorOwner(restorator2)
+            .routeOnCreate { called = true }
+
+        // assert
+        assertFalse(called)
+    }
+
+    @Test
+    fun `routeOnCreate is called when not restoring`() {
+        // test
+        val restorator = Restorator(null)
+        var called = false
+
+        restoratorOwner(restorator)
+            .routeOnCreate { called = true }
+
+        // assert
+        assertTrue(called)
     }
 
     @Test
@@ -69,6 +97,13 @@ class RestoratorTest {
 
         println("*** size: ${bytes.size}")
     }
+}
+
+private fun restoratorOwner(
+    restorator: Restorator
+): RestoratorOwner = object : RestoratorOwner {
+    override val restorator: Restorator
+        get() = restorator
 }
 
 private fun assertByteArrayEquals(

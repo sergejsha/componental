@@ -29,6 +29,9 @@ internal class AndroidRestorator(
             }
     }
 
+    override val canRestore: Boolean
+        get() = delegate.canRestore
+
     override fun restoreRoute(): ByteArray? {
         val bytes = delegate.restoreRoute()
         return bytes
