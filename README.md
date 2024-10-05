@@ -3,7 +3,8 @@
 
 # 🍱 Componental
 
-Kotlin Multiplatform library for componentization of Compose UI. The library is based on concepts proposed and
+Kotlin Multiplatform library for componentization of Compose UI. The library is based on concepts
+proposed and
 implemented
 by awesome [Decompose](https://github.com/arkivanov/Decompose). The differences are:
 
@@ -20,7 +21,7 @@ In `gradle/libs.versions.toml`
 ```toml
 [versions]
 kotlin = "2.0.20"
-componental = "0.5"
+componental = "0.7"
 
 [libraries]
 componental = { module = "de.halfbit:componental", version.ref = "componental" }
@@ -74,6 +75,7 @@ dependencies {
 
 # Release Notes
 
+* 0.7 Improved API and handling of hierarchy restoration process
 * 0.6 Better handling of closed channels
 * 0.5 Improve Toast API and UI, bump to Kotlin 2.0.20
 * 0.4 Refine Stack and Slot API and their implementations
